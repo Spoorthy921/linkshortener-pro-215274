@@ -1,47 +1,51 @@
-import React, { useState, useEffect } from 'react';
-import logo from './logo.svg';
-import './App.css';
+import React, { useMemo, useState } from "react";
+import "./App.css";
+import NavBar from "./components/NavBar";
+import HomePage from "./pages/HomePage";
+import DashboardPage from "./pages/DashboardPage";
+import useToast from "./hooks/useToast";
+import Toast from "./components/Toast";
 
 // PUBLIC_INTERFACE
 function App() {
-  const [theme, setTheme] = useState('light');
+  /** Root application component. */
+  const [theme, setTheme] = useState("dark");
+  const [activeTab, setActiveTab] = useState("shorten");
+  const toast = useToast();
 
-  // Effect to apply theme to document element
-  useEffect(() => {
-    document.documentElement.setAttribute('data-theme', theme);
-  }, [theme]);
+  // Avoid direct DOM manipulation: theme is applied via a top-level class.
+  const appClassName = useMemo(() => `App theme-${theme}`, [theme]);
 
   // PUBLIC_INTERFACE
   const toggleTheme = () => {
-    setTheme(prevTheme => prevTheme === 'light' ? 'dark' : 'light');
+    setTheme((prev) => (prev === "dark" ? "light" : "dark"));
   };
 
   return (
-    <div className="App">
-      <header className="App-header">
-        <button 
-          className="theme-toggle" 
-          onClick={toggleTheme}
-          aria-label={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}
-        >
-          {theme === 'light' ? '🌙 Dark' : '☀️ Light'}
-        </button>
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <p>
-          Current theme: <strong>{theme}</strong>
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+    <div className={appClassName}>
+      <NavBar
+        theme={theme}
+        onToggleTheme={toggleTheme}
+        activeTab={activeTab}
+        onSelectTab={setActiveTab}
+      />
+
+      <main className="Main">
+        {activeTab === "shorten" ? (
+          <HomePage toast={toast} />
+        ) : (
+          <DashboardPage toast={toast} />
+        )}
+      </main>
+
+      <footer className="Footer">
+        <div className="Footer-inner">
+          <span className="Footer-brand">LinkShortener Pro</span>
+          <span className="Footer-meta">Retro-grade links with click tracking.</span>
+        </div>
+      </footer>
+
+      <Toast toast={toast.toast} onDismiss={toast.dismiss} />
     </div>
   );
 }
